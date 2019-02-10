@@ -1,5 +1,6 @@
 package com.tfar.toughnessbar.client;
 
+import com.tfar.toughnessbar.ToughnessBarConfig;
 import com.tfar.toughnessbar.ToughnessBarConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -10,11 +11,14 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EventHandlerClient {
@@ -23,8 +27,16 @@ public class EventHandlerClient {
     private final ResourceLocation FULL = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/full.png");
     private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
     private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
-    //TODO: Do this from a config
-    private final List<Color> colors = Arrays.asList(Color.WHITE, Color.ORANGE, Color.YELLOW, Color.CYAN, Color.GREEN, Color.MAGENTA);
+    private final List<Color> colors = new ArrayList<>();
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        //Only process events for this mod
+        if (event.getModID().equals(ToughnessBarConstants.MOD_ID)) {
+            ConfigManager.sync(ToughnessBarConstants.MOD_ID, Config.Type.INSTANCE);
+            colors.clear();
+        }
+    }
 
     @SubscribeEvent
     public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
@@ -34,6 +46,21 @@ public class EventHandlerClient {
                 int armorToughness = MathHelper.floor(viewEntity.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
                 if (armorToughness <= 0) {
                     return;
+                }
+                if (colors.isEmpty()) {
+                    for (String hexColor : ToughnessBarConfig.colorValues) {
+                        if (hexColor.startsWith("#")) {
+                            try {
+                                colors.add(new Color(Integer.parseInt(hexColor.substring(1), 16)));
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+
+                    if (colors.isEmpty()) {
+                        //Add white as a default if nothing was loaded from the config. White doesn't change texture color
+                        colors.add(Color.WHITE);
+                    }
                 }
                 int index = armorToughness / 20;
                 armorToughness = armorToughness % 20;
