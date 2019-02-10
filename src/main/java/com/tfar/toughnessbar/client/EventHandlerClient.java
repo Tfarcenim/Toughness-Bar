@@ -1,5 +1,7 @@
 package com.tfar.toughnessbar.client;
 
+import com.tfar.toughnessbar.ToughnessBarConfig;
+import com.tfar.toughnessbar.ToughnessBarConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -9,17 +11,32 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.GuiIngameForge;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.config.Config;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GL11;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EventHandlerClient {
-    private static ResourceLocation TOUGHNESS_ICON1 = new ResourceLocation("toughnessbar:textures/gui/icon1.png");
-    private static ResourceLocation TOUGHNESS_ICON2 = new ResourceLocation("toughnessbar:textures/gui/icon2.png");
-    private static ResourceLocation TOUGHNESS_ICON3 = new ResourceLocation("toughnessbar:textures/gui/icon3.png");
-    private static ResourceLocation TOUGHNESS_ICON4 = new ResourceLocation("toughnessbar:textures/gui/icon4.png");
-    private static ResourceLocation TOUGHNESS_ICON5 = new ResourceLocation("toughnessbar:textures/gui/icon5.png");
-    private static ResourceLocation TOUGHNESS_ICON6 = new ResourceLocation("toughnessbar:textures/gui/icon6.png");
-    private static ResourceLocation TOUGHNESS_ICON7 = new ResourceLocation("toughnessbar:textures/gui/icon7.png");
-    private static ResourceLocation TOUGHNESS_ICON8 = new ResourceLocation("toughnessbar:textures/gui/icon8.png");
+    private final ResourceLocation EMPTY = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/empty.png");
+    private final ResourceLocation HALF = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half.png");
+    private final ResourceLocation FULL = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/full.png");
+    private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
+    private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
+    private final List<Color> colors = new ArrayList<>();
+
+    @SubscribeEvent
+    public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        //Only process events for this mod
+        if (event.getModID().equals(ToughnessBarConstants.MOD_ID)) {
+            ConfigManager.sync(ToughnessBarConstants.MOD_ID, Config.Type.INSTANCE);
+            colors.clear();
+        }
+    }
 
     @SubscribeEvent
     public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
@@ -27,58 +44,132 @@ public class EventHandlerClient {
             if (Minecraft.getMinecraft().getRenderViewEntity() instanceof EntityLivingBase) {
                 EntityLivingBase viewEntity = (EntityLivingBase) Minecraft.getMinecraft().getRenderViewEntity();
                 int armorToughness = MathHelper.floor(viewEntity.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
-                int width = event.getResolution().getScaledWidth();
-                int height = event.getResolution().getScaledHeight();
-                if (armorToughness > 0 && armorToughness < 21) {
-                    render(width, height, armorToughness, TOUGHNESS_ICON1);
-                } else if (armorToughness > 20 && armorToughness < 41) {
-                    render(width, height, armorToughness - 20, TOUGHNESS_ICON2);
-                } else if (armorToughness > 40 && armorToughness < 61) {
-                    render(width, height, armorToughness - 40, TOUGHNESS_ICON3);
-                } else if (armorToughness > 60 && armorToughness < 81) {
-                    render(width, height, armorToughness - 60, TOUGHNESS_ICON4);
-                } else if (armorToughness > 80 && armorToughness < 101) {
-                    render(width, height, armorToughness - 80, TOUGHNESS_ICON5);
-                } else if (armorToughness > 100 && armorToughness < 121) {
-                    render(width, height, armorToughness - 100, TOUGHNESS_ICON6);
-                } else if (armorToughness > 120 && armorToughness < 141) {
-                    render(width, height, armorToughness - 120, TOUGHNESS_ICON7);
-                } else if (armorToughness > 140) {
-                    render(width, height, armorToughness - 140, TOUGHNESS_ICON8);
+                if (armorToughness <= 0) {
+                    return;
                 }
+                if (colors.isEmpty()) {
+                    for (String hexColor : ToughnessBarConfig.colorValues) {
+                        if (hexColor.startsWith("#")) {
+                            try {
+                                colors.add(new Color(Integer.parseInt(hexColor.substring(1), 16)));
+                            } catch (Exception ignored) {
+                            }
+                        }
+                    }
+
+                    if (colors.isEmpty()) {
+                        //Add white as a default if nothing was loaded from the config. White doesn't change texture color
+                        colors.add(Color.WHITE);
+                    }
+                }
+                int index = armorToughness / 20;
+                armorToughness = armorToughness % 20;
+                if (armorToughness == 0) {
+                    //Given we are 1 based, and we already got rid of zero we want 1 through 20
+                    armorToughness = 20;
+                }
+                ToughnessColor color = getColor(index);
+                ToughnessColor previous = getColor(index - 1);
+                ResourceLocation lastTexture = null;
+
+                GlStateManager.enableBlend();
+                GL11.glPushMatrix();
+                GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+
+                int top = event.getResolution().getScaledHeight() - GuiIngameForge.right_height;
+                int right = event.getResolution().getScaledWidth() / 2 + 82;
+                for (int i = 1; i < 20; i += 2) {
+                    if (previous.isCapped()) {
+                        //The entire bar is capped
+                        lastTexture = fullIcon(CAPPED, previous, lastTexture, right, top, 9);
+                    } else if (i < armorToughness) {
+                        //Full
+                        lastTexture = fullIcon(color.isCapped() ? CAPPED : FULL, color, lastTexture, right, top, 9);
+                    } else if (i == armorToughness) {
+                        //Half
+                        lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
+                    } else {//if (i > armorToughness)
+                        //Empty
+                        lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
+                    }
+                    right -= 8;
+                }
+                GuiIngameForge.right_height += 10;
+
+                //Revert state
+                GL11.glPopMatrix();
+                GL11.glPopAttrib();
+
+                Minecraft.getMinecraft().getTextureManager().bindTexture(Gui.ICONS);
+                GlStateManager.disableBlend();
             }
         }
     }
 
-    private void render(int width, int height, int armorToughness, ResourceLocation texture) {
-        Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
-        GlStateManager.enableBlend();
-
-        int toughnessRows = MathHelper.ceil(armorToughness / 20.0F);
-        int rowHeight = Math.min(Math.max(10 - (toughnessRows - 2), 3), 10);
-
-        int top = (height - GuiIngameForge.right_height) - ((toughnessRows * rowHeight) - 10);
-        for (int i = toughnessRows - 1; i >= 0; i--) {
-            int right = width / 2 + 82;
-            int mult = 20 * i;
-            for (int j = 1; j < 20; j += 2) {
-                int x = 0;
-                if (mult + j < armorToughness) {
-                    x = 18;
-                } else if (mult + j == armorToughness) {
-                    x = 9;
-                } //else if (mult + j > armorToughness) x = 0
-                Gui.drawModalRectWithCustomSizedTexture(right, top, x, 0, 9, 9, 27, 9);
-                right -= 8;
-            }
-            top += rowHeight;
-            GuiIngameForge.right_height += rowHeight;
+    private ToughnessColor getColor(int index) {
+        if (index < 0) {
+            return new ToughnessColor(true);
+        } else if (index >= colors.size()) {
+            return new ToughnessColor(false);
         }
-        if (rowHeight < 10) {
-            GuiIngameForge.right_height += (10 - rowHeight);
+        return new ToughnessColor(colors.get(index));
+    }
+
+    private ResourceLocation fullIcon(ResourceLocation icon, ToughnessColor color, ResourceLocation lastIcon, int right, int top, int width) {
+        if (!icon.equals(lastIcon)) {
+            Minecraft.getMinecraft().getTextureManager().bindTexture(icon);
+        }
+        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        Gui.drawModalRectWithCustomSizedTexture(right, top, 0, 0, width, 9, 9, 9);
+        return icon;
+    }
+
+    private ResourceLocation halfIcon(ResourceLocation icon, ToughnessColor color, ToughnessColor previous, ResourceLocation lastIcon, int right, int top) {
+        //Previous tier's half icon
+        fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastIcon, right, top, 4);
+
+        //This ones half icon
+        Minecraft.getMinecraft().getTextureManager().bindTexture(icon);
+        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        Gui.drawModalRectWithCustomSizedTexture(right + 4, top, 0, 0, 5, 9, 5, 9);
+        return icon;
+    }
+
+    private class ToughnessColor {
+        private Color color;
+        //Empty icon or capped icon. Only is used if color is null
+        private boolean empty = true;
+
+        private ToughnessColor(Color color) {
+            this.color = color;
         }
 
-        Minecraft.getMinecraft().getTextureManager().bindTexture(Gui.ICONS);
-        GlStateManager.disableBlend();
+        private ToughnessColor(boolean empty) {
+            this.empty = empty;
+        }
+
+        private boolean isEmpty() {
+            return color == null && empty;
+        }
+
+        private boolean isCapped() {
+            return color == null && !empty;
+        }
+
+        private float getRed() {
+            return color == null ? 1 : color.getRed() / 256F;
+        }
+
+        private float getBlue() {
+            return color == null ? 1 : color.getBlue() / 256F;
+        }
+
+        private float getGreen() {
+            return color == null ? 1 : color.getGreen() / 256F;
+        }
+
+        private float getAlpha() {
+            return color == null ? 1 : color.getAlpha() / 256F;
+        }
     }
 }
