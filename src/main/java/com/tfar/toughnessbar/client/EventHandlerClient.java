@@ -126,7 +126,7 @@ public class EventHandlerClient {
 
     private ResourceLocation halfIcon(ResourceLocation icon, ToughnessColor color, ToughnessColor previous, ResourceLocation lastIcon, int right, int top) {
         //Previous tier's half icon
-        fullIcon(previous.isEmpty() ? EMPTY : previous.isCapped() ? CAPPED : FULL, previous, lastIcon, right, top, 4);
+        fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastIcon, right, top, 4);
 
         //This ones half icon
         Minecraft.getMinecraft().getTextureManager().bindTexture(icon);
