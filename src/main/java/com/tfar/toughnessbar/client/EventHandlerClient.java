@@ -2,7 +2,6 @@ package com.tfar.toughnessbar.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -52,7 +51,6 @@ public class EventHandlerClient {
     }
 
     private void render(int width, int height, int armorToughness, ResourceLocation texture) {
-        GuiIngame gui = Minecraft.getMinecraft().ingameGUI;
         Minecraft.getMinecraft().getTextureManager().bindTexture(texture);
         GlStateManager.enableBlend();
 
@@ -62,14 +60,15 @@ public class EventHandlerClient {
         int top = (height - GuiIngameForge.right_height) - ((toughnessRows * rowHeight) - 10);
         for (int i = toughnessRows - 1; i >= 0; i--) {
             int right = width / 2 + 82;
+            int mult = 20 * i;
             for (int j = 1; j < 20; j += 2) {
-                if (j + (i * 20) < armorToughness) {
-                    gui.drawTexturedModalRect(right, top, 34, 0, 9, 9);
-                } else if (j + (i * 20) == armorToughness) {
-                    gui.drawTexturedModalRect(right, top, 25, 0, 9, 9);
-                } else if (j + (i * 20) > armorToughness) {
-                    gui.drawTexturedModalRect(right, top, 16, 0, 9, 9);
-                }
+                int x = 0;
+                if (mult + j < armorToughness) {
+                    x = 18;
+                } else if (mult + j == armorToughness) {
+                    x = 9;
+                } //else if (mult + j > armorToughness) x = 0
+                Gui.drawModalRectWithCustomSizedTexture(right, top, x, 0, 9, 9, 27, 9);
                 right -= 8;
             }
             top += rowHeight;
