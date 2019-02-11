@@ -62,12 +62,10 @@ public class EventHandlerClient {
                         colors.add(Color.WHITE);
                     }
                 }
+                armorToughness--;
                 int index = armorToughness / 20;
                 armorToughness = armorToughness % 20;
-                if (armorToughness == 0) {
-                    //Given we are 1 based, and we already got rid of zero we want 1 through 20
-                    armorToughness = 20;
-                }
+                armorToughness++;
                 ToughnessColor color = getColor(index);
                 ToughnessColor previous = getColor(index - 1);
                 ResourceLocation lastTexture = null;
