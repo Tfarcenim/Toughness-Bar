@@ -21,6 +21,8 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.tfar.toughnessbar.ToughnessBarConfig.showEmptyArmorToughnessIcons;
+
 public class EventHandlerClient {
     private final ResourceLocation EMPTY = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/empty.png");
     private final ResourceLocation HALF = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half.png");
@@ -28,6 +30,7 @@ public class EventHandlerClient {
     private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
     private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
     private final List<Color> colors = new ArrayList<>();
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
@@ -88,7 +91,7 @@ public class EventHandlerClient {
                         lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
                     } else {//if (i > armorToughness)
                         //Empty
-                        lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
+                        if (showEmptyArmorToughnessIcons || viewEntity.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue()>=20) lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
                     }
                     right -= 8;
                 }

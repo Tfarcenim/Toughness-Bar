@@ -14,5 +14,6 @@ public class ToughnessBarConfig {
         "#00FF00",
         "#7F00FF",
     };
-
+    @Config.Name("Show empty armor icons?")
+    public static boolean showEmptyArmorToughnessIcons = false;
 }
