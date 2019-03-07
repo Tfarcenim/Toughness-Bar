@@ -30,7 +30,6 @@ public class EventHandlerClient {
     private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
     private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
     private final List<Color> colors = new ArrayList<>();
-    private final Minecraft mc = Minecraft.getMinecraft();
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
@@ -86,13 +85,13 @@ public class EventHandlerClient {
                     } else if (i < armorToughness) {
                         //Full
                         lastTexture = fullIcon(color.isCapped() ? CAPPED : FULL, color, lastTexture, right, top, 9);
-                    } else if (i == armorToughness) {
+                    } else //if (i > armorToughness)
+                        //Empty
+                        if (i == armorToughness) {
                         //Half
                         lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
-                    } else {//if (i > armorToughness)
-                        //Empty
-                        if (showEmptyArmorToughnessIcons || index > 0) lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
-                    }
+                    } else if (showEmptyArmorToughnessIcons || index > 0)
+                            lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
                     right -= 8;
                 }
                 GuiIngameForge.right_height += 10;
