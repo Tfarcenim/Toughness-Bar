@@ -91,7 +91,7 @@ public class EventHandlerClient {
                         lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
                     } else {//if (i > armorToughness)
                         //Empty
-                        if (showEmptyArmorToughnessIcons || viewEntity.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue()>=20) lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
+                        if (showEmptyArmorToughnessIcons || index > 0) lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
                     }
                     right -= 8;
                 }
