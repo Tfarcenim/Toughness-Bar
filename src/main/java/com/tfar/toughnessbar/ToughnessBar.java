@@ -1,16 +1,32 @@
 package com.tfar.toughnessbar;
 
 import com.tfar.toughnessbar.client.EventHandlerClient;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(clientSideOnly = true, modid = ToughnessBarConstants.MOD_ID, name = ToughnessBarConstants.NAME, version = ToughnessBarConstants.VERSION,
-        acceptedMinecraftVersions = ToughnessBarConstants.MC_VERSION)
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import static com.tfar.toughnessbar.ToughnessBar.MOD_ID;
+
+@Mod(value = MOD_ID)
 public class ToughnessBar {
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
+    public static final String MOD_ID = "toughnessbar";
+    public static Logger logger = LogManager.getLogger("toughnessbar");
+
+    public ToughnessBar(){
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ToughnessBarConfig.CLIENT_SPEC);
+    }
+
+    @SubscribeEvent
+    public void setup(FMLCommonSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new EventHandlerClient());
     }
 }
