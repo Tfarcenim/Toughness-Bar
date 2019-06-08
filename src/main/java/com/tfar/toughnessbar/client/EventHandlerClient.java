@@ -1,15 +1,16 @@
 package com.tfar.toughnessbar.client;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.tfar.toughnessbar.ToughnessBar;
 import com.tfar.toughnessbar.ToughnessBarConfig;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.entity.EntityLivingBase;
+
+import net.minecraft.client.gui.IngameGui;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
-import net.minecraftforge.client.GuiIngameForge;
+import net.minecraftforge.client.ForgeIngameGui;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -18,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.tfar.toughnessbar.ToughnessBarConfig.*;
+import static net.minecraft.client.gui.AbstractGui.GUI_ICONS_LOCATION;
 
 public class EventHandlerClient {
   private final ResourceLocation EMPTY = new ResourceLocation(ToughnessBar.MOD_ID, "textures/gui/empty.png");
@@ -32,8 +34,8 @@ public class EventHandlerClient {
   @SubscribeEvent
   public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
     if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
-      if (mc.getRenderViewEntity() instanceof EntityLivingBase) {
-        EntityLivingBase viewEntity = (EntityLivingBase) mc.getRenderViewEntity();
+      if (mc.getRenderViewEntity() instanceof LivingEntity) {
+        LivingEntity viewEntity = (LivingEntity) mc.getRenderViewEntity();
         int armorToughness = MathHelper.floor(viewEntity.getAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getValue());
         if (armorToughness <= 0) {
           return;
@@ -64,7 +66,7 @@ public class EventHandlerClient {
         GlStateManager.enableBlend();
         GlStateManager.pushMatrix();
 
-        int top = mc.mainWindow.getScaledHeight() - GuiIngameForge.right_height;
+        int top = mc.mainWindow.getScaledHeight() - ForgeIngameGui.right_height;
         int right = mc.mainWindow.getScaledWidth() / 2 + 82;
         for (int i = 1; i < 20; i += 2) {
           if (previous.isCapped()) {
@@ -78,16 +80,16 @@ public class EventHandlerClient {
             if (i == armorToughness) {
               //Half
               lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
-            } else if (empty || index > 0)
+            } else if (!empty || index > 0)
               lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
           right -= 8;
         }
-        GuiIngameForge.right_height += 10;
+        ForgeIngameGui.right_height += 10;
 
         //Revert state
         GlStateManager.popMatrix();
 
-        mc.getTextureManager().bindTexture(Gui.ICONS);
+        mc.getTextureManager().bindTexture(GUI_ICONS_LOCATION);
         GlStateManager.disableBlend();
       }
     }
@@ -107,7 +109,7 @@ public class EventHandlerClient {
       mc.getTextureManager().bindTexture(icon);
     }
     GlStateManager.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-    Gui.drawModalRectWithCustomSizedTexture(right, top, 0, 0, width, 9, 9, 9);
+    IngameGui.blit(right, top, 0, 0, width, 9, 9, 9);
     return icon;
   }
 
@@ -118,7 +120,7 @@ public class EventHandlerClient {
     //This ones half icon
     mc.getTextureManager().bindTexture(icon);
     GlStateManager.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
-    Gui.drawModalRectWithCustomSizedTexture(right + 4, top, 0, 0, 5, 9, 5, 9);
+    IngameGui.blit(right + 4, top, 0, 0, 5, 9, 5, 9);
     return icon;
   }
 
