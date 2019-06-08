@@ -16,4 +16,5 @@ public class ToughnessBarConfig {
     };
     @Config.Name("Show empty armor icons?")
     public static boolean showEmptyArmorToughnessIcons = false;
+    public static boolean showBedrock = true;
 }

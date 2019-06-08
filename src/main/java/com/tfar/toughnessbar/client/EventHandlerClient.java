@@ -15,7 +15,6 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -30,6 +29,7 @@ public class EventHandlerClient {
     private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
     private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
     private final List<Color> colors = new ArrayList<>();
+    private final Minecraft mc = Minecraft.getMinecraft();
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
@@ -43,8 +43,8 @@ public class EventHandlerClient {
     @SubscribeEvent
     public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
         if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
-            if (Minecraft.getMinecraft().getRenderViewEntity() instanceof EntityLivingBase) {
-                EntityLivingBase viewEntity = (EntityLivingBase) Minecraft.getMinecraft().getRenderViewEntity();
+            if (mc.getRenderViewEntity() instanceof EntityLivingBase) {
+                EntityLivingBase viewEntity = (EntityLivingBase) mc.getRenderViewEntity();
                 int armorToughness = MathHelper.floor(viewEntity.getEntityAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getAttributeValue());
                 if (armorToughness <= 0) {
                     return;
@@ -73,8 +73,7 @@ public class EventHandlerClient {
                 ResourceLocation lastTexture = null;
 
                 GlStateManager.enableBlend();
-                GL11.glPushMatrix();
-                GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+                GlStateManager.pushMatrix();
 
                 int top = event.getResolution().getScaledHeight() - GuiIngameForge.right_height;
                 int right = event.getResolution().getScaledWidth() / 2 + 82;
@@ -88,19 +87,18 @@ public class EventHandlerClient {
                     } else //if (i > armorToughness)
                         //Empty
                         if (i == armorToughness) {
-                        //Half
-                        lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
-                    } else if (showEmptyArmorToughnessIcons || index > 0)
+                            //Half
+                            lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
+                        } else if (showEmptyArmorToughnessIcons || index > 0)
                             lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
                     right -= 8;
                 }
                 GuiIngameForge.right_height += 10;
 
                 //Revert state
-                GL11.glPopMatrix();
-                GL11.glPopAttrib();
+                GlStateManager.popMatrix();
 
-                Minecraft.getMinecraft().getTextureManager().bindTexture(Gui.ICONS);
+                mc.getTextureManager().bindTexture(Gui.ICONS);
                 GlStateManager.disableBlend();
             }
         }
@@ -117,9 +115,9 @@ public class EventHandlerClient {
 
     private ResourceLocation fullIcon(ResourceLocation icon, ToughnessColor color, ResourceLocation lastIcon, int right, int top, int width) {
         if (!icon.equals(lastIcon)) {
-            Minecraft.getMinecraft().getTextureManager().bindTexture(icon);
+            mc.getTextureManager().bindTexture(icon);
         }
-        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         Gui.drawModalRectWithCustomSizedTexture(right, top, 0, 0, width, 9, 9, 9);
         return icon;
     }
@@ -129,8 +127,8 @@ public class EventHandlerClient {
         fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastIcon, right, top, 4);
 
         //This ones half icon
-        Minecraft.getMinecraft().getTextureManager().bindTexture(icon);
-        GL11.glColor4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+        mc.getTextureManager().bindTexture(icon);
+        GlStateManager.color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
         Gui.drawModalRectWithCustomSizedTexture(right + 4, top, 0, 0, 5, 9, 5, 9);
         return icon;
     }
