@@ -2,7 +2,7 @@ package com.tfar.toughnessbar;
 
 import net.minecraftforge.common.config.Config;
 
-@Config(modid = ToughnessBarConstants.MOD_ID)
+@Config(modid = Global.MOD_ID)
 public class ToughnessBarConfig {
     @Config.Name("Toughness Bar Icon Colors")
     @Config.Comment("Colors must be specified in #RRGGBB format")

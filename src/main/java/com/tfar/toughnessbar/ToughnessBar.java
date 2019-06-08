@@ -6,8 +6,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
-@Mod(clientSideOnly = true, modid = ToughnessBarConstants.MOD_ID, name = ToughnessBarConstants.NAME, version = ToughnessBarConstants.VERSION,
-        acceptedMinecraftVersions = ToughnessBarConstants.MC_VERSION)
+@Mod(clientSideOnly = true, modid = Global.MOD_ID, name = Global.NAME, version = Global.VERSION,
+        acceptedMinecraftVersions = Global.MC_VERSION)
 public class ToughnessBar {
     @EventHandler
     public void preInit(FMLPreInitializationEvent event) {

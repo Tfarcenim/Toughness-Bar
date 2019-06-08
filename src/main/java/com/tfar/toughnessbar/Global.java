@@ -1,6 +1,6 @@
 package com.tfar.toughnessbar;
 
-public class ToughnessBarConstants {
+public class Global {
     public static final String NAME = "Toughness Bar";
     public static final String MOD_ID = "toughnessbar";
     public static final String VERSION = "2.1";

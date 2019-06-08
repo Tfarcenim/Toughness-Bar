@@ -1,7 +1,7 @@
 package com.tfar.toughnessbar.client;
 
 import com.tfar.toughnessbar.ToughnessBarConfig;
-import com.tfar.toughnessbar.ToughnessBarConstants;
+import com.tfar.toughnessbar.Global;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.renderer.GlStateManager;
@@ -20,22 +20,23 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.tfar.toughnessbar.ToughnessBarConfig.showBedrock;
 import static com.tfar.toughnessbar.ToughnessBarConfig.showEmptyArmorToughnessIcons;
 
 public class EventHandlerClient {
-    private final ResourceLocation EMPTY = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/empty.png");
-    private final ResourceLocation HALF = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half.png");
-    private final ResourceLocation FULL = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/full.png");
-    private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/half_capped.png");
-    private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBarConstants.MOD_ID, "textures/gui/capped.png");
+    private final ResourceLocation EMPTY = new ResourceLocation(Global.MOD_ID, "textures/gui/empty.png");
+    private final ResourceLocation HALF = new ResourceLocation(Global.MOD_ID, "textures/gui/half.png");
+    private final ResourceLocation FULL = new ResourceLocation(Global.MOD_ID, "textures/gui/full.png");
+    private final ResourceLocation HALF_CAPPED = new ResourceLocation(Global.MOD_ID, "textures/gui/half_capped.png");
+    private final ResourceLocation CAPPED = new ResourceLocation(Global.MOD_ID, "textures/gui/capped.png");
     private final List<Color> colors = new ArrayList<>();
     private final Minecraft mc = Minecraft.getMinecraft();
 
     @SubscribeEvent
     public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         //Only process events for this mod
-        if (event.getModID().equals(ToughnessBarConstants.MOD_ID)) {
-            ConfigManager.sync(ToughnessBarConstants.MOD_ID, Config.Type.INSTANCE);
+        if (event.getModID().equals(Global.MOD_ID)) {
+            ConfigManager.sync(Global.MOD_ID, Config.Type.INSTANCE);
             colors.clear();
         }
     }
@@ -108,7 +109,7 @@ public class EventHandlerClient {
         if (index < 0) {
             return new ToughnessColor(true);
         } else if (index >= colors.size()) {
-            return new ToughnessColor(false);
+            return showBedrock ? new ToughnessColor(false) : new ToughnessColor(colors.get(colors.size() - 1));
         }
         return new ToughnessColor(colors.get(index));
     }
@@ -155,19 +156,19 @@ public class EventHandlerClient {
         }
 
         private float getRed() {
-            return color == null ? 1 : color.getRed() / 256F;
+            return color == null ? empty ? colors.get(0).getRed() : 1 : color.getRed() / 256F;
         }
 
         private float getBlue() {
-            return color == null ? 1 : color.getBlue() / 256F;
+            return color == null ? empty ? colors.get(0).getBlue() : 1 : color.getBlue() / 256F;
         }
 
         private float getGreen() {
-            return color == null ? 1 : color.getGreen() / 256F;
+            return color == null ? empty ? colors.get(0).getGreen() : 1 : color.getGreen() / 256F;
         }
 
         private float getAlpha() {
-            return color == null ? 1 : color.getAlpha() / 256F;
+            return color == null ? empty ? colors.get(0).getAlpha() : 1 : color.getAlpha() / 256F;
         }
     }
 }
