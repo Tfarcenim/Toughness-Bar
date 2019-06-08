@@ -18,7 +18,7 @@ import static com.tfar.toughnessbar.ToughnessBar.MOD_ID;
 @Mod(value = MOD_ID)
 public class ToughnessBar {
     public static final String MOD_ID = "toughnessbar";
-    public static Logger logger = LogManager.getLogger("toughnessbar");
+    public static Logger logger = LogManager.getLogger(MOD_ID);
 
     public ToughnessBar(){
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
@@ -28,5 +28,11 @@ public class ToughnessBar {
     @SubscribeEvent
     public void setup(FMLCommonSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new EventHandlerClient());
+    }
+
+    public void bakeConfigs(ModConfig.ModConfigEvent event)
+    {
+        if (event.getConfig().getSpec() == ToughnessBarConfig.CLIENT_SPEC)
+            ToughnessBarConfig.bake();
     }
 }
