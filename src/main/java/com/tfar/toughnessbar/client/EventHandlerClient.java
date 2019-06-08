@@ -80,7 +80,7 @@ public class EventHandlerClient {
             if (i == armorToughness) {
               //Half
               lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
-            } else if (!empty || index > 0)
+            } else if (empty || index > 0)
               lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
           right -= 8;
         }

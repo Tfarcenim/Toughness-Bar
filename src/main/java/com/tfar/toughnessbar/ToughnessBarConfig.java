@@ -38,9 +38,9 @@ public class ToughnessBarConfig {
       builder.pop();
     }
   }
-    public static List<? extends String> colorValues = new ArrayList<>();
-    public static boolean bedrock = true;
-    public static boolean empty = true;
+    public static List<? extends String> colorValues;
+    public static boolean bedrock;
+    public static boolean empty;
     public static void bake(){
       colorValues = ClientConfig.colorValues.get();
       bedrock = ClientConfig.showBedrock.get();
