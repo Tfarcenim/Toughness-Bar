@@ -1,6 +1,5 @@
 package com.tfar.toughnessbar;
 
-import com.tfar.toughnessbar.client.EventHandlerClient;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
