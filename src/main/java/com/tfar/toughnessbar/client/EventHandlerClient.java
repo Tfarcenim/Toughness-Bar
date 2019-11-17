@@ -2,9 +2,7 @@ package com.tfar.toughnessbar.client;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.tfar.toughnessbar.ToughnessBar;
-import com.tfar.toughnessbar.ToughnessBarConfig;
 import net.minecraft.client.Minecraft;
-
 import net.minecraft.client.gui.IngameGui;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.SharedMonsterAttributes;
@@ -14,11 +12,11 @@ import net.minecraftforge.client.ForgeIngameGui;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tfar.toughnessbar.ToughnessBarConfig.*;
+import static com.tfar.toughnessbar.ToughnessBarConfig.ClientConfig.*;
 import static net.minecraft.client.gui.AbstractGui.GUI_ICONS_LOCATION;
 
 public class EventHandlerClient {
@@ -27,7 +25,7 @@ public class EventHandlerClient {
   private final ResourceLocation FULL = new ResourceLocation(ToughnessBar.MOD_ID, "textures/gui/full.png");
   private final ResourceLocation HALF_CAPPED = new ResourceLocation(ToughnessBar.MOD_ID, "textures/gui/half_capped.png");
   private final ResourceLocation CAPPED = new ResourceLocation(ToughnessBar.MOD_ID, "textures/gui/capped.png");
-  private final List<Color> colors = new ArrayList<>();
+  private final List<Integer> colors = new ArrayList<>();
   private final Minecraft mc = Minecraft.getInstance();
 
 
@@ -37,22 +35,14 @@ public class EventHandlerClient {
       if (mc.getRenderViewEntity() instanceof LivingEntity) {
         LivingEntity viewEntity = (LivingEntity) mc.getRenderViewEntity();
         int armorToughness = MathHelper.floor(viewEntity.getAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getValue());
-        if (armorToughness <= 0) {
+        if (armorToughness < 1) {
           return;
         }
         if (colors.isEmpty()) {
-          for (String hexColor : ToughnessBarConfig.colorValues) {
-            if (hexColor.startsWith("#")) {
-              try {
-                colors.add(new Color(Integer.parseInt(hexColor.substring(1), 16)));
-              } catch (Exception ignored) {
-              }
-            }
-          }
-
+          colorValues.get().stream().filter(hexColor -> hexColor.startsWith("#")).forEach(hexColor -> colors.add(Integer.parseInt(hexColor.substring(1), 16)));
           if (colors.isEmpty()) {
             //Add white as a default if nothing was loaded from the config. White doesn't change texture color
-            colors.add(Color.WHITE);
+            colors.add(0);
           }
         }
         armorToughness--;
@@ -69,19 +59,19 @@ public class EventHandlerClient {
         int top = mc.mainWindow.getScaledHeight() - ForgeIngameGui.right_height;
         int right = mc.mainWindow.getScaledWidth() / 2 + 82;
         for (int i = 1; i < 20; i += 2) {
-          if (previous.isCapped()) {
+          if (isCapped(index)) {
             //The entire bar is capped
             lastTexture = fullIcon(CAPPED, previous, lastTexture, right, top, 9);
           } else if (i < armorToughness) {
             //Full
-            lastTexture = fullIcon(color.isCapped() ? CAPPED : FULL, color, lastTexture, right, top, 9);
+            lastTexture = fullIcon(isCapped(index) ? CAPPED : FULL, color, lastTexture, right, top, 9);
           } else //if (i > armorToughness)
             //Empty
             if (i == armorToughness) {
               //Half
-              lastTexture = halfIcon(color.isCapped() ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top);
-            } else if (empty || index > 0)
-              lastTexture = fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastTexture, right, top, 9);
+              lastTexture = halfIcon(isCapped(index) ? HALF_CAPPED : HALF, color, previous, lastTexture, right, top,index);
+            } else if (empty.get() || index > 0)
+              lastTexture = fullIcon(isEmpty(index) ? EMPTY : FULL, previous, lastTexture, right, top, 9);
           right -= 8;
         }
         ForgeIngameGui.right_height += 10;
@@ -97,68 +87,62 @@ public class EventHandlerClient {
 
   private ToughnessColor getColor(int index) {
     if (index < 0) {
-      return new ToughnessColor(true);
+      return WHITE;
     } else if (index >= colors.size()) {
-      return bedrock ? new ToughnessColor(false) : new ToughnessColor(colors.get(colors.size() - 1));
+      return showBedrock.get() ? WHITE : new ToughnessColor(colors.get(colors.size() - 1));
     }
     return new ToughnessColor(colors.get(index));
   }
+
+  private static final ToughnessColor WHITE = new ToughnessColor(0xFFFFFF);
 
   private ResourceLocation fullIcon(ResourceLocation icon, ToughnessColor color, ResourceLocation lastIcon, int right, int top, int width) {
     if (!icon.equals(lastIcon)) {
       mc.getTextureManager().bindTexture(icon);
     }
-    GlStateManager.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    GlStateManager.color3f(color.getRed(), color.getGreen(), color.getBlue());
     IngameGui.blit(right, top, 0, 0, width, 9, 9, 9);
     return icon;
   }
 
-  private ResourceLocation halfIcon(ResourceLocation icon, ToughnessColor color, ToughnessColor previous, ResourceLocation lastIcon, int right, int top) {
+  private ResourceLocation halfIcon(ResourceLocation icon, ToughnessColor color, ToughnessColor previous, ResourceLocation lastIcon, int right, int top, int index) {
     //Previous tier's half icon
-    fullIcon(previous.isEmpty() ? EMPTY : FULL, previous, lastIcon, right, top, 4);
+    fullIcon(isEmpty(index) ? EMPTY : FULL, previous, lastIcon, right, top, 4);
 
     //This ones half icon
     mc.getTextureManager().bindTexture(icon);
-    GlStateManager.color4f(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
+    GlStateManager.color3f(color.getRed(), color.getGreen(), color.getBlue());
     IngameGui.blit(right + 4, top, 0, 0, 5, 9, 5, 9);
     return icon;
   }
 
-  private class ToughnessColor {
-    private Color color;
-    //Empty icon or capped icon. Only is used if color is null
-    private boolean empty = true;
+  private boolean isEmpty(int index){
+    return index < 0;
+  }
 
-    private ToughnessColor(Color color) {
+  private boolean isCapped(int index){
+    return index > colors.size();
+  }
+
+  private static class ToughnessColor {
+
+    public final int color;
+
+    private ToughnessColor(int color) {
       this.color = color;
     }
 
-    private ToughnessColor(boolean empty) {
-      this.empty = empty;
-    }
-
-    private boolean isEmpty() {
-      return color == null && empty;
-    }
-
-    private boolean isCapped() {
-      return color == null && !empty;
-    }
-
     private float getRed() {
-      return color == null ? empty ? colors.get(0).getRed() : 1 : color.getRed() / 256F;
+      return ((color & 0xFF0000) >> 16)/256f;
     }
 
     private float getBlue() {
-      return color == null ? empty ? colors.get(0).getBlue() : 1 : color.getBlue() / 256F;
+      return ((color & 0x00FF00) >> 8)/256f;
+
     }
 
     private float getGreen() {
-      return color == null ? empty ? colors.get(0).getGreen() : 1 : color.getGreen() / 256F;
-    }
-
-    private float getAlpha() {
-      return color == null ? empty ? colors.get(0).getAlpha() : 1 : color.getAlpha() / 256F;
+      return (color & 0x0000FF) /256f;
     }
   }
 }

@@ -7,6 +7,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -25,14 +26,8 @@ public class ToughnessBar {
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ToughnessBarConfig.CLIENT_SPEC);
     }
 
-    @SubscribeEvent
-    public void setup(FMLCommonSetupEvent event) {
+    public void setup(FMLClientSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(new EventHandlerClient());
     }
 
-    public void bakeConfigs(ModConfig.ModConfigEvent event)
-    {
-        if (event.getConfig().getSpec() == ToughnessBarConfig.CLIENT_SPEC)
-            ToughnessBarConfig.bake();
-    }
 }
