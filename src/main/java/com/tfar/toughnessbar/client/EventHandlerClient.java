@@ -12,7 +12,6 @@ import net.minecraftforge.client.ForgeIngameGui;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
