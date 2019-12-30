@@ -14,6 +14,7 @@ import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class EventHandlerClient {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(receiveCanceled = true)
     public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
         if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
             if (mc.getRenderViewEntity() instanceof EntityLivingBase) {
@@ -133,17 +134,16 @@ public class EventHandlerClient {
     }
 
     private class ToughnessColor {
-        int color;
+        Color color;
         //Empty icon or capped icon. Only is used if color is null
         private boolean empty = true;
 
-        private ToughnessColor(int color) {
+        private ToughnessColor(Color color) {
             this.color = color;
         }
 
         private ToughnessColor(boolean isCapped) {
             this.empty = isCapped;
-            this.color = 0xFFFFFF;
         }
 
         private boolean isEmpty() {
@@ -154,11 +154,12 @@ public class EventHandlerClient {
             return !empty;
         }
 
-        private int getRed() {
-            return color;
+        private float getRed() {
+            return color == null ? empty ? colors.get(0).getRed() : 1 : color.getRed() / 256F;
         }
 
         private float getBlue() {
+            return color == null ? empty ? colors.get(0).getBlue() : 1 : color.getBlue() / 256F;
         }
 
         private float getGreen() {
