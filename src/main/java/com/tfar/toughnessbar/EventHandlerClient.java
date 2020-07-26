@@ -1,10 +1,11 @@
 package com.tfar.toughnessbar;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.AbstractGui;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.SharedMonsterAttributes;
+import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.MathHelper;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -30,7 +31,7 @@ public class EventHandlerClient {
     if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
       if (mc.getRenderViewEntity() instanceof LivingEntity) {
         LivingEntity viewEntity = (LivingEntity) mc.getRenderViewEntity();
-        int armorToughness = MathHelper.floor(viewEntity.getAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS).getValue());
+        int armorToughness = MathHelper.floor(viewEntity.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue());
         if (armorToughness < 1) {
           return;
         }
@@ -49,21 +50,22 @@ public class EventHandlerClient {
         RenderSystem.enableBlend();
         RenderSystem.pushMatrix();
 
-        int top = mc.func_228018_at_().getScaledHeight() - ForgeIngameGui.right_height;
-        int right = mc.func_228018_at_().getScaledWidth() / 2 + 82;
+        int top = mc.getMainWindow().getScaledHeight() - ForgeIngameGui.right_height;
+        int right = mc.getMainWindow().getScaledWidth() / 2 + 82;
         mc.getTextureManager().bindTexture(TEXTURE);
         for (int i = 0; i < 10; i++) {
           Index index = indexes[i];
+          MatrixStack stack = event.getMatrixStack();
           if (layer > 0)//toughness>20
           switch (index) {
-            case empty: drawFullIcon(previous,i,right,top);break;
-            case half: drawSplitIcon(previous,color,i,right,top);break;
-            case full: drawFullIcon(color,i,right,top);break;
+            case empty: drawFullIcon(stack,previous,i,right,top);break;
+            case half: drawSplitIcon(stack,previous,color,i,right,top);break;
+            case full: drawFullIcon(stack,color,i,right,top);break;
           } else {//toughness<=20
             switch (index) {
-              case empty: if (empty.get()) drawEmptyIcon(color,i,right,top);break;
-              case half: drawHalfIcon(color,i,right,top);break;
-              case full: drawFullIcon(color,i,right,top);break;
+              case empty: if (empty.get()) drawEmptyIcon(stack,color,i,right,top);break;
+              case half: drawHalfIcon(stack,color,i,right,top);break;
+              case full: drawFullIcon(stack,color,i,right,top);break;
             }
           }
         }
@@ -99,34 +101,34 @@ public class EventHandlerClient {
     return index < 0 ? 0xffffff : index >= colors.size() ? colors.get(colors.size() - 1) : colors.get(index);
   }
 
-  private void drawEmptyIcon(int color, int i, int guiLeft, int guiTop) {
+  private void drawEmptyIcon(MatrixStack stack,int color, int i, int guiLeft, int guiTop) {
     RenderSystem.color3f((color >> 16 & 0xff) / 256f, (color >> 8 & 0xff) / 256f, (color & 0xff) / 256f);
-    blit(guiLeft - i * 8, guiTop, 18,27, 9, 9);
+    blit(stack,guiLeft - i * 8, guiTop, 18,27, 9, 9);
   }
 
-  private void drawFullIcon(int color, int i, int guiLeft, int guiTop) {
+  private void drawFullIcon(MatrixStack stack,int color, int i, int guiLeft, int guiTop) {
     RenderSystem.color3f((color >> 16 & 0xff) / 256f, (color >> 8 & 0xff) / 256f, (color & 0xff) / 256f);
-    blit(guiLeft- i * 8, guiTop, 9, 18, 9, 9);
+    blit(stack,guiLeft- i * 8, guiTop, 9, 18, 9, 9);
   }
 
-  private void drawHalfIcon(int color, int i, int guiLeft, int guiTop) {
+  private void drawHalfIcon(MatrixStack stack,int color, int i, int guiLeft, int guiTop) {
     RenderSystem.color3f((color >> 16 & 0xff) / 256f, (color >> 8 & 0xff) / 256f, (color & 0xff) / 256f);
-    if (empty.get())drawEmptyIcon(color,i,guiLeft,guiTop);
-    blit(guiLeft - i * 8, guiTop, 0, 9, 9, 9);
+    if (empty.get())drawEmptyIcon(stack,color,i,guiLeft,guiTop);
+    blit(stack,guiLeft - i * 8, guiTop, 0, 9, 9, 9);
   }
 
-  private void drawSplitIcon(int color1,int color2, int i, int guiLeft, int guiTop) {
-    drawFullIcon(color1,i,guiLeft,guiTop);
+  private void drawSplitIcon(MatrixStack stack,int color1,int color2, int i, int guiLeft, int guiTop) {
+    drawFullIcon(stack,color1,i,guiLeft,guiTop);
     RenderSystem.color3f((color2 >> 16 & 0xff) / 256f, (color2 >> 8 & 0xff) / 256f, (color2 & 0xff) / 256f);
-    blit(guiLeft - i * 8, guiTop, 0, 9, 9, 9);
+    blit(stack,guiLeft - i * 8, guiTop, 0, 9, 9, 9);
   }
 
-  public static void blit(int x, int y, float u, float v, int width, int height) {
-    blit(x,y,0,u,v,width,height,9,27);
+  public static void blit(MatrixStack stack,int x, int y, float u, float v, int width, int height) {
+    blit(stack,x,y,0,u,v,width,height,9,27);
   }
 
-  public static void blit(int x, int y, int z, float u, float v, int width, int height, int textureX, int textureY) {
-    AbstractGui.blit(x,y,z,u,v,width,height,textureX,textureY);
+  public static void blit(MatrixStack stack,int x, int y, int z, float u, float v, int width, int height, int textureX, int textureY) {
+    AbstractGui.blit(stack,x,y,z,u,v,width,height,textureX,textureY);
   }
 
     enum Index {

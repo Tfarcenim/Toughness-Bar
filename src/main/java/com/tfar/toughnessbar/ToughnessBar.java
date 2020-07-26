@@ -1,14 +1,18 @@
 package com.tfar.toughnessbar;
 
 import com.google.common.collect.Lists;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,8 +26,13 @@ public class ToughnessBar {
   public static final String MOD_ID = "toughnessbar";
 
   public ToughnessBar() {
-    FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
-    ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ToughnessBarConfig.CLIENT_SPEC);
+    if (FMLEnvironment.dist == Dist.CLIENT) {
+      ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+      FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
+      ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ToughnessBarConfig.CLIENT_SPEC);
+    } else {
+      System.out.println("Why did you put this on a dedicated server?");
+    }
   }
 
   public void setup(FMLClientSetupEvent event) {
