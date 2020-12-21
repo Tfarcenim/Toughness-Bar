@@ -1,4 +1,4 @@
-package com.tfar.toughnessbar;
+package tfar.toughnessbar;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.api.distmarker.Dist;
@@ -14,12 +14,10 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
-import static com.tfar.toughnessbar.ToughnessBar.MOD_ID;
+import static tfar.toughnessbar.ToughnessBar.MOD_ID;
 
 @Mod(value = MOD_ID)
 public class ToughnessBar {

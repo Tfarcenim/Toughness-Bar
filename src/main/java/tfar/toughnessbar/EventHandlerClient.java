@@ -1,4 +1,4 @@
-package com.tfar.toughnessbar;
+package tfar.toughnessbar;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -15,7 +15,6 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.tfar.toughnessbar.ToughnessBar.ToughnessBarConfig.ClientConfig.*;
 import static net.minecraft.client.gui.AbstractGui.GUI_ICONS_LOCATION;
 
 public class EventHandlerClient {
@@ -36,7 +35,7 @@ public class EventHandlerClient {
           return;
         }
         if (colors.isEmpty()) {
-          colorValues.get().stream().filter(hexColor -> hexColor.startsWith("#")).forEach(hexColor -> colors.add(Integer.parseInt(hexColor.substring(1), 16)));
+          ToughnessBar.ToughnessBarConfig.ClientConfig.colorValues.get().stream().filter(hexColor -> hexColor.startsWith("#")).forEach(hexColor -> colors.add(Integer.parseInt(hexColor.substring(1), 16)));
           if (colors.isEmpty()) {
             //Add white as a default if nothing was loaded from the config. White doesn't change texture color
             colors.add(0xffffff);
@@ -63,7 +62,7 @@ public class EventHandlerClient {
             case full: drawFullIcon(stack,color,i,right,top);break;
           } else {//toughness<=20
             switch (index) {
-              case empty: if (empty.get()) drawEmptyIcon(stack,color,i,right,top);break;
+              case empty: if (ToughnessBar.ToughnessBarConfig.ClientConfig.empty.get()) drawEmptyIcon(stack,color,i,right,top);break;
               case half: drawHalfIcon(stack,color,i,right,top);break;
               case full: drawFullIcon(stack,color,i,right,top);break;
             }
@@ -113,7 +112,7 @@ public class EventHandlerClient {
 
   private void drawHalfIcon(MatrixStack stack,int color, int i, int guiLeft, int guiTop) {
     RenderSystem.color3f((color >> 16 & 0xff) / 256f, (color >> 8 & 0xff) / 256f, (color & 0xff) / 256f);
-    if (empty.get())drawEmptyIcon(stack,color,i,guiLeft,guiTop);
+    if (ToughnessBar.ToughnessBarConfig.ClientConfig.empty.get())drawEmptyIcon(stack,color,i,guiLeft,guiTop);
     blit(stack,guiLeft - i * 8, guiTop, 0, 9, 9, 9);
   }
 
