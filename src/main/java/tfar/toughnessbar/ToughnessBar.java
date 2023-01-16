@@ -2,9 +2,11 @@ package tfar.toughnessbar;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
@@ -12,7 +14,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
@@ -25,7 +26,7 @@ public class ToughnessBar {
 
   public ToughnessBar() {
     if (FMLEnvironment.dist == Dist.CLIENT) {
-      ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (a, b) -> true));
+      ModLoadingContext.get().registerExtensionPoint(IExtensionPoint.DisplayTest.class, ()->new IExtensionPoint.DisplayTest(()->"ANY", (remote, isServer)-> true));
       FMLJavaModLoadingContext.get().getModEventBus().addListener(this::setup);
       ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ToughnessBarConfig.CLIENT_SPEC);
     } else {
@@ -34,7 +35,7 @@ public class ToughnessBar {
   }
 
   public void setup(FMLClientSetupEvent event) {
-    MinecraftForge.EVENT_BUS.register(new EventHandlerClient());
+    OverlayRegistry.registerOverlayBelow(ForgeIngameGui.CHAT_PANEL_ELEMENT,"armor_toughness", EventHandlerClient.ingameOverlay);
   }
 
   public static class ToughnessBarConfig {
