@@ -2,17 +2,14 @@ package tfar.toughnessbar;
 
 import com.google.common.collect.Lists;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.IExtensionPoint;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -34,8 +31,8 @@ public class ToughnessBar {
     }
   }
 
-  public void setup(FMLClientSetupEvent event) {
-    OverlayRegistry.registerOverlayBelow(ForgeIngameGui.CHAT_PANEL_ELEMENT,"armor_toughness", EventHandlerClient.ingameOverlay);
+  public void setup(RegisterGuiOverlaysEvent event) {
+    event.registerBelow(VanillaGuiOverlay.CHAT_PANEL.id(),"armor_toughness", EventHandlerClient.ingameOverlay);
   }
 
   public static class ToughnessBarConfig {

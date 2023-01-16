@@ -8,8 +8,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.IIngameOverlay;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,9 +24,9 @@ public class EventHandlerClient {
 
   static Index[] indexes;
 
-  static IIngameOverlay ingameOverlay = EventHandlerClient::onRenderArmorToughnessEvent;
+  static IGuiOverlay ingameOverlay = EventHandlerClient::onRenderArmorToughnessEvent;
 
-  public static void onRenderArmorToughnessEvent(ForgeIngameGui gui, PoseStack matrices, float partialTick, int width, int height) {
+  public static void onRenderArmorToughnessEvent(ForgeGui gui, PoseStack matrices, float partialTick, int width, int height) {
     if (mc.getCameraEntity() instanceof LivingEntity viewEntity) {
       int armorToughness = Mth.floor(viewEntity.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue());
       if (armorToughness < 1) {
@@ -47,7 +47,7 @@ public class EventHandlerClient {
       RenderSystem.enableBlend();
       //RenderSystem.pushMatrix();
 
-      int top = height - gui.right_height;
+      int top = height - gui.rightHeight;
       int right = width / 2 + 82;
       bind(TEXTURE);
       for (int i = 0; i < 10; i++) {
@@ -66,7 +66,7 @@ public class EventHandlerClient {
           }
         }
       }
-      gui.right_height += 10;
+      gui.rightHeight += 10;
 
       //Revert state
       //RenderSystem.popMatrix();
