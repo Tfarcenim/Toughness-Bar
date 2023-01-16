@@ -28,8 +28,8 @@ public class EventHandlerClient {
   @SubscribeEvent(receiveCanceled = true)
   public void onRenderArmorToughnessEvent(RenderGameOverlayEvent.Post event) {
     if (event.getType() == RenderGameOverlayEvent.ElementType.FOOD) {
-      if (mc.getRenderViewEntity() instanceof LivingEntity) {
-        LivingEntity viewEntity = (LivingEntity) mc.getRenderViewEntity();
+      if (mc.getCameraEntity() instanceof LivingEntity) {
+        LivingEntity viewEntity = (LivingEntity) mc.getCameraEntity();
         int armorToughness = MathHelper.floor(viewEntity.getAttribute(Attributes.ARMOR_TOUGHNESS).getValue());
         if (armorToughness < 1) {
           return;
@@ -49,9 +49,9 @@ public class EventHandlerClient {
         RenderSystem.enableBlend();
         RenderSystem.pushMatrix();
 
-        int top = mc.getMainWindow().getScaledHeight() - ForgeIngameGui.right_height;
-        int right = mc.getMainWindow().getScaledWidth() / 2 + 82;
-        mc.getTextureManager().bindTexture(TEXTURE);
+        int top = mc.getWindow().getGuiScaledHeight() - ForgeIngameGui.right_height;
+        int right = mc.getWindow().getGuiScaledWidth() / 2 + 82;
+        mc.getTextureManager().bind(TEXTURE);
         for (int i = 0; i < 10; i++) {
           Index index = indexes[i];
           MatrixStack stack = event.getMatrixStack();
@@ -72,7 +72,7 @@ public class EventHandlerClient {
 
         //Revert state
         RenderSystem.popMatrix();
-        mc.getTextureManager().bindTexture(GUI_ICONS_LOCATION);
+        mc.getTextureManager().bind(GUI_ICONS_LOCATION);
         RenderSystem.disableBlend();
       }
     }
